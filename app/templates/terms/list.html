@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Terms{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1><i class="bi bi-calendar3" aria-hidden="true"></i> Terms</h1>
+        <p>Manage academic terms and their scheduling windows.</p>
+    </div>
+    <div class="toolbar"><button type="button" onclick="openTermModal()"><i class="bi bi-plus-lg" aria-hidden="true"></i> New Term</button></div>
+</div>
+
+<section class="card" aria-labelledby="terms-heading">
+    <h2 id="terms-heading">Term directory</h2>
+    <table id="term-table" class="display" style="width:100%">
+        <thead><tr><th>Term</th><th>Start date</th><th>End date</th><th>Status</th><th>Updated</th><th aria-label="Actions">Actions</th></tr></thead>
+        <tbody>
+        {% for term in terms %}
+        <tr>
+            <td>{{ term['term_name'] }}</td><td>{{ term['start_date'] }}</td><td>{{ term['end_date'] }}</td>
+            <td>{{ 'Active' if term['is_active'] else 'Inactive' }}</td><td>{{ term['updated_at'] }}</td>
+            <td>
+                <button class="icon-button" type="button" aria-label="View {{ term['term_name'] }}" title="View" onclick="viewTerm({{ term['id'] }})"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                <button class="icon-button" type="button" aria-label="Edit {{ term['term_name'] }}" title="Edit" onclick="editTerm({{ term['id'] }})"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+                <form method="post" action="{{ url_for('terms.toggle_active', term_id=term['id']) }}" style="display:inline" onsubmit="return confirm('{{ 'Restore' if not term['is_active'] else 'Deactivate' }} this term?');">
+                    <button class="icon-button {{ 'danger' if term['is_active'] else '' }}" type="submit" aria-label="{{ 'Deactivate' if term['is_active'] else 'Restore' }} {{ term['term_name'] }}" title="{{ 'Deactivate' if term['is_active'] else 'Restore' }}"><i class="bi bi-{{ 'archive' if term['is_active'] else 'arrow-counterclockwise' }}" aria-hidden="true"></i></button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<dialog id="term-modal" aria-labelledby="term-modal-title">
+    <div class="dialog-content">
+        <h2 id="term-modal-title">New term</h2>
+        <form method="post" action="{{ url_for('terms.save_term') }}" id="term-form">
+            <input type="hidden" name="id" id="term-id">
+            <div class="form-grid">
+                <div class="form-field" style="grid-column:1/-1"><label for="term-name">Term name</label><input id="term-name" name="term_name" required></div>
+                <div class="form-field"><label for="start-date">Start date</label><input id="start-date" name="start_date" type="date" required></div>
+                <div class="form-field"><label for="end-date">End date</label><input id="end-date" name="end_date" type="date" required></div>
+            </div>
+            <div class="dialog-actions"><button class="secondary" type="button" onclick="document.getElementById('term-modal').close()">Cancel</button><button id="term-submit" type="submit">Save term</button></div>
+        </form>
+    </div>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+<script>
+    new DataTable('#term-table', { responsive: true, pageLength: 10 });
+    const termModal = document.getElementById('term-modal');
+    const termForm = document.getElementById('term-form');
+    const termFields = ['term-name', 'start-date', 'end-date'];
+    function openTermModal() {
+        termForm.reset(); document.getElementById('term-id').value = '';
+        document.getElementById('term-modal-title').textContent = 'New term'; document.getElementById('term-submit').hidden = false;
+        termFields.forEach((id) => document.getElementById(id).disabled = false); termModal.showModal();
+    }
+    async function loadTerm(id, readOnly) {
+        const response = await fetch(`/terms/${id}`); if (!response.ok) return;
+        const term = await response.json(); document.getElementById('term-id').value = term.id;
+        document.getElementById('term-name').value = term.term_name; document.getElementById('start-date').value = term.start_date; document.getElementById('end-date').value = term.end_date;
+        document.getElementById('term-modal-title').textContent = readOnly ? 'View term' : 'Edit term'; document.getElementById('term-submit').hidden = readOnly;
+        termFields.forEach((field) => document.getElementById(field).disabled = readOnly); termModal.showModal();
+    }
+    function editTerm(id) { loadTerm(id, false); } function viewTerm(id) { loadTerm(id, true); }
+</script>
+{% endblock %}

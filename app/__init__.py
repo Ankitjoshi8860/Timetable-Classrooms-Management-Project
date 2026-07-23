@@ -18,6 +18,7 @@ def create_app(config_name=None):
     from app.routes.rooms import rooms_bp
     from app.routes.terms import terms_bp
     from app.routes.allocations import allocations_bp
+    from app.routes.timetable import timetable_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -26,5 +27,6 @@ def create_app(config_name=None):
     app.register_blueprint(rooms_bp)
     app.register_blueprint(terms_bp)
     app.register_blueprint(allocations_bp)
+    app.register_blueprint(timetable_bp)
     app.context_processor(lambda: {"current_user": get_current_user()})
     return app

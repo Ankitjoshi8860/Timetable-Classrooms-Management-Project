@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Timetable{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1><i class="bi bi-grid-3x3-gap" aria-hidden="true"></i> Weekly timetable</h1>
+        <p>View recurring lectures by fixed period and weekday.</p>
+    </div>
+</div>
+
+<section class="card" aria-labelledby="filters-heading">
+    <h2 id="filters-heading">Filters</h2>
+    <form class="filter-bar" method="get">
+        <div class="form-field"><label for="term-id">Term</label><select id="term-id" name="term_id"><option value="">Select active term</option>{% for term in terms %}<option value="{{ term['id'] }}" {% if term['id'] == selected_term_id %}selected{% endif %}>{{ term['term_name'] }}</option>{% endfor %}</select></div>
+        <div class="form-field"><label for="room-id">Room</label><select id="room-id" name="room_id"><option value="">All rooms</option>{% for room in rooms %}<option value="{{ room['id'] }}" {% if room['id'] == selected_room_id %}selected{% endif %}>{{ room['room_code'] }} — {{ room['room_name'] }}</option>{% endfor %}</select></div>
+        <div class="form-field"><label for="professor-id">Professor</label><select id="professor-id" name="professor_id"><option value="">All professors</option>{% for professor in professors %}<option value="{{ professor['id'] }}" {% if professor['id'] == selected_professor_id %}selected{% endif %}>{{ professor['first_name'] }} {{ professor['last_name'] }}</option>{% endfor %}</select></div>
+        <button type="submit"><i class="bi bi-funnel" aria-hidden="true"></i> Apply filters</button>
+        <a class="button secondary" href="{{ url_for('timetable.grid') }}">Clear</a>
+    </form>
+</section>
+
+<section class="card" aria-labelledby="grid-heading" style="margin-top:1.5rem">
+    <h2 id="grid-heading">{{ (terms | selectattr('id', 'equalto', selected_term_id) | list | first)['term_name'] if selected_term_id and terms else 'No active term selected' }}</h2>
+    {% if periods and selected_term_id %}
+    <div class="timetable-grid" role="grid" aria-label="Weekly timetable">
+        <div class="timetable-cell timetable-header">Period</div>
+        {% for day_number, day_name in weekdays %}<div class="timetable-cell timetable-header">{{ day_name }}</div>{% endfor %}
+        {% for period in periods %}
+        <div class="timetable-cell period-cell">{{ period['period_label'] }}</div>
+        {% for day_number, day_name in weekdays %}
+        <div class="timetable-cell" role="gridcell">
+            {% for lecture in cells.get((period['id'], day_number), []) %}
+            <div class="lecture-chip"><strong>{{ lecture['course_code'] }}</strong><span>{{ lecture['first_name'] }} {{ lecture['last_name'] }}</span><span>{{ lecture['room_code'] }}</span></div>
+            {% else %}<span class="muted">Available</span>{% endfor %}
+        </div>
+        {% endfor %}
+        {% endfor %}
+    </div>
+    {% else %}<p class="muted">Create or activate a term to view the timetable.</p>{% endif %}
+</section>
+{% endblock %}

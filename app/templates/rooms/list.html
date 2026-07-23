@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Rooms{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1><i class="bi bi-door-open" aria-hidden="true"></i> Rooms</h1>
+        <p>Manage classrooms and their active status.</p>
+    </div>
+    <div class="toolbar"><button type="button" onclick="openRoomModal()"><i class="bi bi-plus-lg" aria-hidden="true"></i> New Room</button></div>
+</div>
+
+<section class="card" aria-labelledby="rooms-heading">
+    <h2 id="rooms-heading">Room directory</h2>
+    <table id="room-table" class="display" style="width:100%">
+        <thead><tr><th>Room number/code</th><th>Room name</th><th>Building</th><th>Status</th><th>Updated</th><th aria-label="Actions">Actions</th></tr></thead>
+        <tbody>
+        {% for room in rooms %}
+        <tr>
+            <td>{{ room['room_code'] }}</td><td>{{ room['room_name'] }}</td><td>{{ room['building'] }}</td>
+            <td>{{ 'Active' if room['is_active'] else 'Inactive' }}</td><td>{{ room['updated_at'] }}</td>
+            <td>
+                <button class="icon-button" type="button" aria-label="View {{ room['room_code'] }}" title="View" onclick="viewRoom({{ room['id'] }})"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                <button class="icon-button" type="button" aria-label="Edit {{ room['room_code'] }}" title="Edit" onclick="editRoom({{ room['id'] }})"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+                <form method="post" action="{{ url_for('rooms.toggle_active', room_id=room['id']) }}" style="display:inline" onsubmit="return confirm('{{ 'Restore' if not room['is_active'] else 'Deactivate' }} this room?');">
+                    <button class="icon-button {{ 'danger' if room['is_active'] else '' }}" type="submit" aria-label="{{ 'Deactivate' if room['is_active'] else 'Restore' }} {{ room['room_code'] }}" title="{{ 'Deactivate' if room['is_active'] else 'Restore' }}"><i class="bi bi-{{ 'archive' if room['is_active'] else 'arrow-counterclockwise' }}" aria-hidden="true"></i></button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<dialog id="room-modal" aria-labelledby="room-modal-title">
+    <div class="dialog-content">
+        <h2 id="room-modal-title">New room</h2>
+        <form method="post" action="{{ url_for('rooms.save_room') }}" id="room-form">
+            <input type="hidden" name="id" id="room-id">
+            <div class="form-grid">
+                <div class="form-field"><label for="room-code">Room number/code</label><input id="room-code" name="room_code" required></div>
+                <div class="form-field"><label for="room-name">Room name</label><input id="room-name" name="room_name" required></div>
+                <div class="form-field"><label for="building">Building</label><input id="building" name="building" required></div>
+            </div>
+            <div class="dialog-actions"><button class="secondary" type="button" onclick="document.getElementById('room-modal').close()">Cancel</button><button id="room-submit" type="submit">Save room</button></div>
+        </form>
+    </div>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+<script>
+    new DataTable('#room-table', { responsive: true, pageLength: 10 });
+    const roomModal = document.getElementById('room-modal');
+    const roomForm = document.getElementById('room-form');
+    const roomFields = ['room-code', 'room-name', 'building'];
+    function openRoomModal() {
+        roomForm.reset(); document.getElementById('room-id').value = '';
+        document.getElementById('room-modal-title').textContent = 'New room'; document.getElementById('room-submit').hidden = false;
+        roomFields.forEach((id) => document.getElementById(id).disabled = false); roomModal.showModal();
+    }
+    async function loadRoom(id, readOnly) {
+        const response = await fetch(`/rooms/${id}`); if (!response.ok) return;
+        const room = await response.json(); document.getElementById('room-id').value = room.id;
+        document.getElementById('room-code').value = room.room_code; document.getElementById('room-name').value = room.room_name; document.getElementById('building').value = room.building;
+        document.getElementById('room-modal-title').textContent = readOnly ? 'View room' : 'Edit room'; document.getElementById('room-submit').hidden = readOnly;
+        roomFields.forEach((field) => document.getElementById(field).disabled = readOnly); roomModal.showModal();
+    }
+    function editRoom(id) { loadRoom(id, false); } function viewRoom(id) { loadRoom(id, true); }
+</script>
+{% endblock %}

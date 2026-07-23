@@ -75,6 +75,7 @@ BEGIN
         id INT IDENTITY(1, 1) NOT NULL CONSTRAINT PK_rooms PRIMARY KEY,
         room_code NVARCHAR(50) NOT NULL CONSTRAINT UQ_rooms_room_code UNIQUE,
         room_name NVARCHAR(200) NOT NULL,
+        building NVARCHAR(150) NOT NULL CONSTRAINT DF_rooms_building DEFAULT N'Main Building',
         is_active BIT NOT NULL CONSTRAINT DF_rooms_is_active DEFAULT 1,
         created_by INT NULL,
         updated_by INT NULL,

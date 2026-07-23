@@ -55,11 +55,14 @@ BEGIN
         course_code NVARCHAR(50) NOT NULL CONSTRAINT UQ_courses_course_code UNIQUE,
         course_name NVARCHAR(200) NOT NULL,
         description NVARCHAR(1000) NULL,
+        department NVARCHAR(150) NOT NULL CONSTRAINT DF_courses_department DEFAULT N'General',
+        credit_hours TINYINT NOT NULL CONSTRAINT DF_courses_credit_hours DEFAULT 3,
         is_active BIT NOT NULL CONSTRAINT DF_courses_is_active DEFAULT 1,
         created_by INT NULL,
         updated_by INT NULL,
         created_at DATETIME2(3) NOT NULL CONSTRAINT DF_courses_created_at DEFAULT SYSUTCDATETIME(),
         updated_at DATETIME2(3) NOT NULL CONSTRAINT DF_courses_updated_at DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT CK_courses_credit_hours CHECK (credit_hours BETWEEN 1 AND 12),
         CONSTRAINT FK_courses_created_by FOREIGN KEY (created_by) REFERENCES dbo.users(id),
         CONSTRAINT FK_courses_updated_by FOREIGN KEY (updated_by) REFERENCES dbo.users(id)
     );

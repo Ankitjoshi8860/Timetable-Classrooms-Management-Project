@@ -14,9 +14,11 @@ def create_app(config_name=None):
     from app.routes.auth import auth_bp
     from app.routes.main import main_bp
     from app.routes.professors import professors_bp
+    from app.routes.courses import courses_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(professors_bp)
+    app.register_blueprint(courses_bp)
     app.context_processor(lambda: {"current_user": get_current_user()})
     return app

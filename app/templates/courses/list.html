@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Courses{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1><i class="bi bi-book" aria-hidden="true"></i> Courses</h1>
+        <p>Manage course catalog records and active status.</p>
+    </div>
+    <div class="toolbar"><button type="button" onclick="openCourseModal()"><i class="bi bi-plus-lg" aria-hidden="true"></i> New Course</button></div>
+</div>
+
+<section class="card" aria-labelledby="courses-heading">
+    <h2 id="courses-heading">Course catalog</h2>
+    <table id="course-table" class="display" style="width:100%">
+        <thead><tr><th>Code</th><th>Name</th><th>Department</th><th>Credits</th><th>Status</th><th>Updated</th><th aria-label="Actions">Actions</th></tr></thead>
+        <tbody>
+        {% for course in courses %}
+        <tr>
+            <td>{{ course['course_code'] }}</td><td>{{ course['course_name'] }}</td><td>{{ course['department'] }}</td><td>{{ course['credit_hours'] }}</td>
+            <td>{{ 'Active' if course['is_active'] else 'Inactive' }}</td><td>{{ course['updated_at'] }}</td>
+            <td>
+                <button class="icon-button" type="button" aria-label="View {{ course['course_code'] }}" title="View" onclick="viewCourse({{ course['id'] }})"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                <button class="icon-button" type="button" aria-label="Edit {{ course['course_code'] }}" title="Edit" onclick="editCourse({{ course['id'] }})"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+                <form method="post" action="{{ url_for('courses.toggle_active', course_id=course['id']) }}" style="display:inline" onsubmit="return confirm('{{ 'Restore' if not course['is_active'] else 'Deactivate' }} this course?');">
+                    <button class="icon-button {{ 'danger' if course['is_active'] else '' }}" type="submit" aria-label="{{ 'Deactivate' if course['is_active'] else 'Restore' }} {{ course['course_code'] }}" title="{{ 'Deactivate' if course['is_active'] else 'Restore' }}"><i class="bi bi-{{ 'archive' if course['is_active'] else 'arrow-counterclockwise' }}" aria-hidden="true"></i></button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<dialog id="course-modal" aria-labelledby="course-modal-title">
+    <div class="dialog-content">
+        <h2 id="course-modal-title">New course</h2>
+        <form method="post" action="{{ url_for('courses.save_course') }}" id="course-form">
+            <input type="hidden" name="id" id="course-id">
+            <div class="form-grid">
+                <div class="form-field"><label for="course-code">Course code</label><input id="course-code" name="course_code" required></div>
+                <div class="form-field"><label for="course-name">Course name</label><input id="course-name" name="course_name" required></div>
+                <div class="form-field"><label for="department">Department</label><input id="department" name="department" required></div>
+                <div class="form-field"><label for="credit-hours">Credit hours</label><input id="credit-hours" name="credit_hours" type="number" min="1" max="12" required></div>
+                <div class="form-field" style="grid-column:1/-1"><label for="description">Description</label><input id="description" name="description"></div>
+            </div>
+            <div class="dialog-actions"><button class="secondary" type="button" onclick="document.getElementById('course-modal').close()">Cancel</button><button id="course-submit" type="submit">Save course</button></div>
+        </form>
+    </div>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+<script>
+    new DataTable('#course-table', { responsive: true, pageLength: 10 });
+    const courseModal = document.getElementById('course-modal');
+    const courseForm = document.getElementById('course-form');
+    const courseFields = ['course-code', 'course-name', 'department', 'credit-hours', 'description'];
+    function openCourseModal() {
+        courseForm.reset(); document.getElementById('course-id').value = '';
+        document.getElementById('course-modal-title').textContent = 'New course';
+        document.getElementById('course-submit').hidden = false;
+        courseFields.forEach((id) => document.getElementById(id).disabled = false); courseModal.showModal();
+    }
+    async function loadCourse(id, readOnly) {
+        const response = await fetch(`/courses/${id}`); if (!response.ok) return;
+        const course = await response.json(); document.getElementById('course-id').value = course.id;
+        document.getElementById('course-code').value = course.course_code; document.getElementById('course-name').value = course.course_name;
+        document.getElementById('department').value = course.department; document.getElementById('credit-hours').value = course.credit_hours;
+        document.getElementById('description').value = course.description || '';
+        document.getElementById('course-modal-title').textContent = readOnly ? 'View course' : 'Edit course';
+        document.getElementById('course-submit').hidden = readOnly; courseFields.forEach((field) => document.getElementById(field).disabled = readOnly); courseModal.showModal();
+    }
+    function editCourse(id) { loadCourse(id, false); } function viewCourse(id) { loadCourse(id, true); }
+</script>
+{% endblock %}

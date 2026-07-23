@@ -18,6 +18,14 @@ from app import create_app
 app = create_app()
 ```
 
-Use `APP_CONFIG=production` when running outside development. Database access
-will be added through `services/db.py` as later milestones implement the schema
-and feature modules.
+Use `APP_CONFIG=production` when running outside development. All database
+access goes through `services/db.py`.
+
+## Local demo seed
+
+Copy the seed credential variables from `.env.example` into your local `.env`
+and replace the placeholder passwords with local-only values. Then run
+`python -m database.seed` from the project root. The script creates demo users,
+professors, a course, a classroom, and a term through `services/db.py`; it does
+not delete or overwrite existing records. The demo passwords are intentionally
+not stored in the repository.

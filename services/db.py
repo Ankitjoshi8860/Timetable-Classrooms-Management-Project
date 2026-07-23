@@ -7,6 +7,11 @@ import threading
 import pymssql 
 from contextlib import contextmanager 
 
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
 _SERVER = os.getenv("DB_SERVER")       
 _DATABASE = os.getenv("DB_NAME")      
 _UID = os.getenv("DB_USER") 
@@ -28,7 +33,7 @@ def _connect():
         user=_UID, 
         password=_PWD, 
         database=_DATABASE, 
-        port=_PORT, 
+        port=int(_PORT),
         autocommit=True, 
         as_dict=True, 
         appname="",   

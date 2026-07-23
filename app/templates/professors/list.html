@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Professors{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1><i class="bi bi-person-badge" aria-hidden="true"></i> Professors</h1>
+        <p>Manage professor records and active status.</p>
+    </div>
+    <div class="toolbar">
+        <button type="button" onclick="openProfessorModal()"><i class="bi bi-plus-lg" aria-hidden="true"></i> New Professor</button>
+    </div>
+</div>
+
+<section class="card" aria-labelledby="professors-heading">
+    <h2 id="professors-heading">Professor directory</h2>
+    <table id="professor-table" class="display" style="width:100%">
+        <thead>
+            <tr><th>Employee code</th><th>Name</th><th>Email</th><th>Status</th><th>Updated</th><th aria-label="Actions">Actions</th></tr>
+        </thead>
+        <tbody>
+        {% for professor in professors %}
+        <tr>
+            <td>{{ professor['employee_code'] }}</td>
+            <td>{{ professor['first_name'] }} {{ professor['last_name'] }}</td>
+            <td>{{ professor['email'] or '—' }}</td>
+            <td>{{ 'Active' if professor['is_active'] else 'Inactive' }}</td>
+            <td>{{ professor['updated_at'] }}</td>
+            <td>
+                <button class="icon-button" type="button" aria-label="View {{ professor['first_name'] }} {{ professor['last_name'] }}" title="View" onclick="viewProfessor({{ professor['id'] }})"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                <button class="icon-button" type="button" aria-label="Edit {{ professor['first_name'] }} {{ professor['last_name'] }}" title="Edit" onclick="editProfessor({{ professor['id'] }})"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+                <form method="post" action="{{ url_for('professors.toggle_active', professor_id=professor['id']) }}" style="display:inline" onsubmit="return confirm('{{ 'Restore' if not professor['is_active'] else 'Deactivate' }} this professor?');">
+                    <button class="icon-button {{ 'danger' if professor['is_active'] else '' }}" type="submit" aria-label="{{ 'Deactivate' if professor['is_active'] else 'Restore' }} {{ professor['first_name'] }} {{ professor['last_name'] }}" title="{{ 'Deactivate' if professor['is_active'] else 'Restore' }}"><i class="bi bi-{{ 'person-slash' if professor['is_active'] else 'person-check' }}" aria-hidden="true"></i></button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<dialog id="professor-modal" aria-labelledby="professor-modal-title">
+    <div class="dialog-content">
+        <h2 id="professor-modal-title">New professor</h2>
+        <form method="post" action="{{ url_for('professors.save_professor') }}" id="professor-form">
+            <input type="hidden" name="id" id="professor-id">
+            <div class="form-grid">
+                <div class="form-field"><label for="employee-code">Employee code</label><input id="employee-code" name="employee_code" required></div>
+                <div class="form-field"><label for="professor-email">Email</label><input id="professor-email" name="email" type="email"></div>
+                <div class="form-field"><label for="first-name">First name</label><input id="first-name" name="first_name" required></div>
+                <div class="form-field"><label for="last-name">Last name</label><input id="last-name" name="last_name" required></div>
+            </div>
+            <div class="dialog-actions">
+                <button class="secondary" type="button" onclick="document.getElementById('professor-modal').close()">Cancel</button>
+                <button id="professor-submit" type="submit">Save professor</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+<script>
+    new DataTable('#professor-table', { responsive: true, pageLength: 10 });
+    const modal = document.getElementById('professor-modal');
+    const form = document.getElementById('professor-form');
+    const fields = ['employee-code', 'professor-email', 'first-name', 'last-name'];
+
+    function openProfessorModal() {
+        form.reset();
+        document.getElementById('professor-id').value = '';
+        document.getElementById('professor-modal-title').textContent = 'New professor';
+        document.getElementById('professor-submit').hidden = false;
+        fields.forEach((id) => document.getElementById(id).disabled = false);
+        modal.showModal();
+    }
+
+    async function loadProfessor(id, readOnly) {
+        const response = await fetch(`/professors/${id}`);
+        if (!response.ok) return;
+        const professor = await response.json();
+        document.getElementById('professor-id').value = professor.id;
+        document.getElementById('employee-code').value = professor.employee_code;
+        document.getElementById('professor-email').value = professor.email || '';
+        document.getElementById('first-name').value = professor.first_name;
+        document.getElementById('last-name').value = professor.last_name;
+        document.getElementById('professor-modal-title').textContent = readOnly ? 'View professor' : 'Edit professor';
+        document.getElementById('professor-submit').hidden = readOnly;
+        fields.forEach((field) => document.getElementById(field).disabled = readOnly);
+        modal.showModal();
+    }
+
+    function editProfessor(id) { loadProfessor(id, false); }
+    function viewProfessor(id) { loadProfessor(id, true); }
+</script>
+{% endblock %}

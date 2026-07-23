@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
     <style>
         :root { --background: #F4F7F6; --surface: #FFFFFF; --accent: #0D6EFD; --text: #213547; }
         * { box-sizing: border-box; }
@@ -29,6 +30,19 @@
         .activity-table { width: 100%; border-collapse: collapse; }
         .activity-table th, .activity-table td { border-bottom: 1px solid #e7eeeb; padding: .8rem .5rem; text-align: left; }
         .empty-state { color: #5b6b78; }
+        .toolbar { display: flex; justify-content: flex-end; gap: .75rem; }
+        .button, button { border: 0; border-radius: .45rem; background: var(--accent); color: white; cursor: pointer; padding: .65rem 1rem; font: inherit; }
+        .button.secondary, button.secondary { background: #e7eeeb; color: var(--text); }
+        .icon-button { background: transparent; color: var(--accent); padding: .35rem; font-size: 1.1rem; }
+        .icon-button.danger { color: #b42318; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+        .form-field { display: grid; gap: .35rem; }
+        .form-field input { border: 1px solid #b9c8c3; border-radius: .4rem; padding: .65rem; font: inherit; }
+        dialog { border: 0; border-radius: .75rem; box-shadow: 0 15px 45px rgb(33 53 71 / 25%); max-width: 640px; width: calc(100% - 2rem); padding: 0; }
+        dialog::backdrop { background: rgb(33 53 71 / 45%); }
+        .dialog-content { padding: 1.5rem; }
+        .dialog-actions { display: flex; justify-content: flex-end; gap: .75rem; margin-top: 1.5rem; }
+        .dataTables_wrapper { background: var(--surface); }
         @media (max-width: 900px) { .app-shell { grid-template-columns: 1fr; } .sidebar { border-right: 0; border-bottom: 1px solid #dfe7e4; } .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media (max-width: 520px) { main { padding: 1rem; } header { padding: 0 1rem; } .metrics { grid-template-columns: 1fr; } }
     </style>
@@ -42,6 +56,7 @@
             <nav>
                 {% if current_user['role'] == 'scheduler' %}
                 <a href="{{ url_for('main.dashboard') }}"><i class="bi bi-speedometer2" aria-hidden="true"></i> Dashboard</a>
+                <a href="{{ url_for('professors.list_professors') }}"><i class="bi bi-person-badge" aria-hidden="true"></i> Professors</a>
                 {% else %}
                 <a href="{{ url_for('main.index') }}"><i class="bi bi-calendar-week" aria-hidden="true"></i> My timetable</a>
                 {% endif %}
@@ -67,5 +82,6 @@
             <main>{% block content %}{% endblock %}</main>
         </div>
     </div>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

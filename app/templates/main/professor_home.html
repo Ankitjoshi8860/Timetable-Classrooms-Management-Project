@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}My timetable{% endblock %}
+
+{% block content %}
+<section class="card" aria-labelledby="professor-heading">
+    <h1 id="professor-heading">My timetable</h1>
+    <p>Welcome, {{ current_user['username'] }}. Your personal lecture schedule will appear here.</p>
+</section>
+{% endblock %}

@@ -1,13 +1,38 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<h1>Timetable dashboard</h1>
-<p>Welcome, {{ current_user['username'] }}. Your role is {{ current_user['role'] }}.</p>
-{% if current_user['role'] == 'scheduler' %}
-<p>You can manage timetable data and allocations.</p>
-{% else %}
-<p>You can view your personal timetable when schedule features are available.</p>
-{% endif %}
+<div class="page-heading">
+    <div>
+        <h1>Admin dashboard</h1>
+        <p>System overview and recent activity for Scheduler/Admin users.</p>
+    </div>
+</div>
+
+<section class="metrics" aria-label="System metrics">
+    <article class="card metric"><i class="bi bi-person-badge" aria-hidden="true"></i><div><span class="metric-value">{{ metrics['professor_count'] }}</span><span class="metric-label">Professors</span></div></article>
+    <article class="card metric"><i class="bi bi-book" aria-hidden="true"></i><div><span class="metric-value">{{ metrics['course_count'] }}</span><span class="metric-label">Courses</span></div></article>
+    <article class="card metric"><i class="bi bi-door-open" aria-hidden="true"></i><div><span class="metric-value">{{ metrics['room_count'] }}</span><span class="metric-label">Rooms</span></div></article>
+    <article class="card metric"><i class="bi bi-calendar3" aria-hidden="true"></i><div><span class="metric-value">{{ metrics['term_count'] }}</span><span class="metric-label">Terms</span></div></article>
+    <article class="card metric"><i class="bi bi-calendar-check" aria-hidden="true"></i><div><span class="metric-value">{{ metrics['lecture_count'] }}</span><span class="metric-label">Scheduled lectures</span></div></article>
+</section>
+
+<section class="card" aria-labelledby="activity-heading">
+    <div class="page-heading">
+        <h2 id="activity-heading">Recent activity</h2>
+    </div>
+    {% if activity %}
+    <table class="activity-table">
+        <thead><tr><th scope="col">Change</th><th scope="col">Entity</th><th scope="col">By</th><th scope="col">When</th></tr></thead>
+        <tbody>
+        {% for item in activity %}
+        <tr><td>{{ item['action']|replace('_', ' ')|title }}</td><td>{{ item['entity_type']|title }}{% if item['entity_id'] %} #{{ item['entity_id'] }}{% endif %}</td><td>{{ item['actor_username'] or 'System' }}</td><td>{{ item['created_at'] }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No activity has been recorded yet.</p>
+    {% endif %}
+</section>
 {% endblock %}

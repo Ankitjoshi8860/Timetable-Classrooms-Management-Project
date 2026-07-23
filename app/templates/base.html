@@ -68,6 +68,7 @@
                 <a href="{{ url_for('courses.list_courses') }}"><i class="bi bi-book" aria-hidden="true"></i> <span class="nav-label">Courses</span></a>
                 <a href="{{ url_for('rooms.list_rooms') }}"><i class="bi bi-door-open" aria-hidden="true"></i> <span class="nav-label">Rooms</span></a>
                 <a href="{{ url_for('terms.list_terms') }}"><i class="bi bi-calendar3" aria-hidden="true"></i> <span class="nav-label">Terms</span></a>
+                <a href="{{ url_for('allocations.new_allocation') }}"><i class="bi bi-calendar-plus" aria-hidden="true"></i> <span class="nav-label">Allocate lecture</span></a>
                 {% else %}
                 <a href="{{ url_for('main.index') }}"><i class="bi bi-calendar-week" aria-hidden="true"></i> <span class="nav-label">My timetable</span></a>
                 {% endif %}

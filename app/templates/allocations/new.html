@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Allocate lecture{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1><i class="bi bi-calendar-plus" aria-hidden="true"></i> Allocate lecture</h1>
+        <p>Schedule a recurring lecture using active master data and fixed periods.</p>
+    </div>
+</div>
+
+<section class="card" aria-labelledby="allocation-heading">
+    <h2 id="allocation-heading">Lecture details</h2>
+    <form method="post">
+        <div class="form-grid">
+            <div class="form-field"><label for="course-id">Course</label><select id="course-id" name="course_id" required><option value="">Select course</option>{% for course in courses %}<option value="{{ course['id'] }}">{{ course['course_code'] }} — {{ course['course_name'] }}</option>{% endfor %}</select></div>
+            <div class="form-field"><label for="professor-id">Professor</label><select id="professor-id" name="professor_id" required><option value="">Select professor</option>{% for professor in professors %}<option value="{{ professor['id'] }}">{{ professor['first_name'] }} {{ professor['last_name'] }} — {{ professor['employee_code'] }}</option>{% endfor %}</select></div>
+            <div class="form-field"><label for="room-id">Room</label><select id="room-id" name="room_id" required><option value="">Select room</option>{% for room in rooms %}<option value="{{ room['id'] }}">{{ room['room_code'] }} — {{ room['room_name'] }} ({{ room['building'] }})</option>{% endfor %}</select></div>
+            <div class="form-field"><label for="term-id">Term</label><select id="term-id" name="term_id" required><option value="">Select active term</option>{% for term in terms %}<option value="{{ term['id'] }}">{{ term['term_name'] }} ({{ term['start_date'] }} to {{ term['end_date'] }})</option>{% endfor %}</select></div>
+            <div class="form-field"><label for="period-id">Fixed period</label><select id="period-id" name="period_id" required><option value="">Select period</option>{% for period in periods %}<option value="{{ period['id'] }}">{{ period['period_label'] }}</option>{% endfor %}</select></div>
+        </div>
+        <fieldset style="margin-top:1.25rem"><legend>Recurring weekdays</legend>
+            <div style="display:flex;flex-wrap:wrap;gap:1rem">
+                {% for day, label in [(1, 'Monday'), (2, 'Tuesday'), (3, 'Wednesday'), (4, 'Thursday'), (5, 'Friday'), (6, 'Saturday'), (7, 'Sunday')] %}
+                <label><input type="checkbox" name="days" value="{{ day }}"> {{ label }}</label>
+                {% endfor %}
+            </div>
+        </fieldset>
+        <div class="dialog-actions"><button type="submit"><i class="bi bi-check2" aria-hidden="true"></i> Save allocation</button></div>
+    </form>
+</section>
+{% endblock %}

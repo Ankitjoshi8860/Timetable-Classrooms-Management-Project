@@ -1,6 +1,7 @@
 """Environment-aware Flask configuration."""
 
 import os
+from datetime import timedelta
 
 from dotenv import load_dotenv
 
@@ -12,6 +13,9 @@ class BaseConfig:
     SECRET_KEY = os.getenv("SECRET_KEY")
     APP_NAME = "Timetable Classroom Management"
     JSON_SORT_KEYS = False
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
 
 
 class DevelopmentConfig(BaseConfig):
@@ -20,12 +24,14 @@ class DevelopmentConfig(BaseConfig):
 
 class ProductionConfig(BaseConfig):
     DEBUG = False
+    SESSION_COOKIE_SECURE = True
 
 
 class TestingConfig(BaseConfig):
     TESTING = True
     DEBUG = False
     SECRET_KEY = "test-only-secret"
+    SESSION_COOKIE_SECURE = False
 
 
 def get_config(config_name=None):

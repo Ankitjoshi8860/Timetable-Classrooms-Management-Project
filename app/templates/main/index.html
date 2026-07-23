@@ -1,8 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Application scaffold{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h1>Application scaffold ready</h1>
-<p>The Flask application is running. Feature modules will be added in later milestones.</p>
+<h1>Timetable dashboard</h1>
+<p>Welcome, {{ current_user['username'] }}. Your role is {{ current_user['role'] }}.</p>
+{% if current_user['role'] == 'scheduler' %}
+<p>You can manage timetable data and allocations.</p>
+{% else %}
+<p>You can view your personal timetable when schedule features are available.</p>
+{% endif %}
 {% endblock %}

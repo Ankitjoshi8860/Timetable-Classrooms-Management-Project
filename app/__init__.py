@@ -3,6 +3,7 @@
 from flask import Flask
 
 from config import get_config
+from app.auth import get_current_user
 
 
 def create_app(config_name=None):
@@ -10,7 +11,10 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(get_config(config_name))
 
+    from app.routes.auth import auth_bp
     from app.routes.main import main_bp
 
+    app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.context_processor(lambda: {"current_user": get_current_user()})
     return app

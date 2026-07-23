@@ -5,7 +5,7 @@ import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from app.auth import get_current_user, scheduler_required
-from services.conflicts import find_professor_conflict, find_room_conflict
+from services.conflicts import find_recurring_professor_conflict, find_recurring_room_conflict
 from services import db
 from services.activity import log_event
 
@@ -76,7 +76,7 @@ def new_allocation():
             flash(error, "error")
             return redirect(url_for("allocations.new_allocation"))
 
-        room_conflict = find_room_conflict(
+        room_conflict = find_recurring_room_conflict(
             values["term_id"], values["room_id"], values["period_id"], values["days"]
         )
         if room_conflict:
@@ -86,7 +86,7 @@ def new_allocation():
             )
             return redirect(url_for("allocations.new_allocation"))
 
-        professor_conflict = find_professor_conflict(
+        professor_conflict = find_recurring_professor_conflict(
             values["term_id"], values["professor_id"], values["period_id"], values["days"]
         )
         if professor_conflict:

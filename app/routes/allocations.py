@@ -5,6 +5,7 @@ import json
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from app.auth import get_current_user, scheduler_required
+from services.conflicts import find_professor_conflict, find_room_conflict
 from services import db
 from services.activity import log_event
 
@@ -65,39 +66,6 @@ def _validate_active_selection(values):
     return None
 
 
-def _find_conflict(values):
-    placeholders = ", ".join("%s" for _ in values["days"])
-    params = (
-        values["term_id"],
-        values["period_id"],
-        values["room_id"],
-        values["professor_id"],
-        *values["days"],
-    )
-    return db.select_one(
-        f"""
-        SELECT TOP 1 l.id, l.room_id, l.professor_id,
-               r.room_code, p.first_name, p.last_name
-        FROM dbo.lectures AS l
-        INNER JOIN dbo.lecture_days AS ld ON ld.lecture_id = l.id AND ld.is_active = 1
-        INNER JOIN dbo.rooms AS r ON r.id = l.room_id
-        INNER JOIN dbo.professors AS p ON p.id = l.professor_id
-        WHERE l.is_active = 1
-          AND l.term_id = %s
-          AND l.period_id = %s
-          AND (l.room_id = %s OR l.professor_id = %s)
-          AND ld.day_of_week IN ({placeholders})
-        """,
-        params,
-    )
-
-
-def _conflict_message(conflict, values):
-    if conflict["room_id"] == values["room_id"]:
-        return f"Room {conflict['room_code']} is already booked for one of the selected weekdays and this period."
-    return f"Professor {conflict['first_name']} {conflict['last_name']} is already scheduled for one of the selected weekdays and this period."
-
-
 @allocations_bp.route("/new", methods=("GET", "POST"))
 @scheduler_required
 def new_allocation():
@@ -108,9 +76,24 @@ def new_allocation():
             flash(error, "error")
             return redirect(url_for("allocations.new_allocation"))
 
-        conflict = _find_conflict(values)
-        if conflict:
-            flash(_conflict_message(conflict, values), "error")
+        room_conflict = find_room_conflict(
+            values["term_id"], values["room_id"], values["period_id"], values["days"]
+        )
+        if room_conflict:
+            flash(
+                f"Room {room_conflict['room_code']} is already booked for one of the selected weekdays and this period.",
+                "error",
+            )
+            return redirect(url_for("allocations.new_allocation"))
+
+        professor_conflict = find_professor_conflict(
+            values["term_id"], values["professor_id"], values["period_id"], values["days"]
+        )
+        if professor_conflict:
+            flash(
+                f"Professor {professor_conflict['first_name']} {professor_conflict['last_name']} is already scheduled for one of the selected weekdays and this period.",
+                "error",
+            )
             return redirect(url_for("allocations.new_allocation"))
 
         actor_id = get_current_user()["id"]

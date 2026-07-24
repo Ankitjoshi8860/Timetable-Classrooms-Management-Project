@@ -26,6 +26,13 @@ access goes through `services/db.py`.
 Copy the seed credential variables from `.env.example` into your local `.env`
 and replace the placeholder passwords with local-only values. Then run
 `python -m database.seed` from the project root. The script creates demo users,
-professors, a course, a classroom, and a term through `services/db.py`; it does
-not delete or overwrite existing records. The demo passwords are intentionally
-not stored in the repository.
+professors, a course, verification classrooms, verification terms, and one valid
+recurring lecture through `services/db.py`; it does not delete or overwrite
+existing records or insert invalid conflicting allocations. The demo passwords
+are intentionally not stored in the repository.
+
+## Conflict verification scenarios
+
+After seeding, run `python -m database.verify_conflicts`. This read-only command
+reports proof for room conflicts, professor conflicts in different rooms, later
+recurring-instance conflicts, and reuse in another term.

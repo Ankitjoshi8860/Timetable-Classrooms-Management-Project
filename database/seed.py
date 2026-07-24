@@ -88,6 +88,42 @@ def _ensure_term(data, created_by):
     return created["id"], True
 
 
+def _ensure_lecture(data, weekdays, created_by):
+    existing = db.select_one(
+        """
+        SELECT id FROM dbo.lectures
+        WHERE course_id = %s AND professor_id = %s AND room_id = %s
+          AND term_id = %s AND period_id = %s AND is_active = 1
+        """,
+        (data["course_id"], data["professor_id"], data["room_id"], data["term_id"], data["period_id"]),
+    )
+    if existing:
+        lecture_id, created = existing["id"], False
+    else:
+        created_row = db.insert(
+            "dbo.lectures",
+            {**data, "created_by": created_by, "updated_by": created_by},
+        )
+        lecture_id, created = created_row["id"], True
+
+    for day in sorted(set(weekdays)):
+        day_row = db.select_one(
+            "SELECT is_active FROM dbo.lecture_days WHERE lecture_id = %s AND day_of_week = %s",
+            (lecture_id, day),
+        )
+        if day_row is None:
+            db.insert(
+                "dbo.lecture_days",
+                {"lecture_id": lecture_id, "day_of_week": day, "created_by": created_by, "updated_by": created_by},
+            )
+        elif not day_row["is_active"]:
+            db.update(
+                "dbo.lecture_days", {"is_active": True, "updated_by": created_by},
+                "lecture_id = %s AND day_of_week = %s", (lecture_id, day),
+            )
+    return lecture_id, created
+
+
 def seed():
     """Seed demo accounts and master data without deleting existing records."""
     scheduler_username = os.getenv("SEED_SCHEDULER_USERNAME", "demo_scheduler")
@@ -126,6 +162,10 @@ def seed():
         {"room_code": "DEMO-ROOM-101", "room_name": "Demo Classroom 101"},
         scheduler_id,
     )
+    verification_room_id, verification_room_created = _ensure_room(
+        {"room_code": "DEMO-ROOM-102", "room_name": "Demo Classroom 102"},
+        scheduler_id,
+    )
     term_id, term_created = _ensure_term(
         {
             "term_name": "Demo Term 2026",
@@ -134,6 +174,19 @@ def seed():
         },
         scheduler_id,
     )
+    verification_term_id, verification_term_created = _ensure_term(
+        {"term_name": "Demo Term 2027", "start_date": "2027-08-01", "end_date": "2027-12-15"},
+        scheduler_id,
+    )
+    period = db.select_one(
+        "SELECT id FROM dbo.periods WHERE period_number = %s AND is_active = 1", (1,)
+    )
+    if period is None:
+        raise RuntimeError("Period 1 must be seeded before demo verification data.")
+    lecture_id, lecture_created = _ensure_lecture(
+        {"course_id": course_id, "professor_id": professor_id, "room_id": room_id, "term_id": term_id, "period_id": period["id"]},
+        weekdays=[3], created_by=scheduler_id,
+    )
 
     records = {
         "scheduler_user": scheduler_id,
@@ -141,7 +194,10 @@ def seed():
         "professor": professor_id,
         "course": course_id,
         "room": room_id,
+        "verification_room": verification_room_id,
         "term": term_id,
+        "verification_term": verification_term_id,
+        "lecture": lecture_id,
     }
     created = {
         "scheduler_user": scheduler_created,
@@ -149,7 +205,10 @@ def seed():
         "professor": professor_record_created,
         "course": course_created,
         "room": room_created,
+        "verification_room": verification_room_created,
         "term": term_created,
+        "verification_term": verification_term_created,
+        "lecture": lecture_created,
     }
     return records, created
 

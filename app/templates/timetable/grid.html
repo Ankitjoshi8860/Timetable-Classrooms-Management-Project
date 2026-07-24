@@ -32,7 +32,7 @@
         {% for day_number, day_name in weekdays %}
         <div class="timetable-cell" role="gridcell">
             {% for lecture in cells.get((period['id'], day_number), []) %}
-            <div class="lecture-chip"><strong>{{ lecture['course_code'] }}</strong><span>{{ lecture['first_name'] }} {{ lecture['last_name'] }}</span><span>{{ lecture['room_code'] }}</span></div>
+            <div class="lecture-chip"><strong>{{ lecture['course_code'] }}</strong><span>{{ lecture['first_name'] }} {{ lecture['last_name'] }}</span><span>{{ lecture['room_code'] }}</span><a class="icon-button" href="{{ url_for('allocations.edit_allocation', lecture_id=lecture['id']) }}" aria-label="Edit {{ lecture['course_code'] }} allocation" title="Edit allocation"><i class="bi bi-pencil" aria-hidden="true"></i></a></div>
             {% else %}<span class="muted">Available</span>{% endfor %}
         </div>
         {% endfor %}

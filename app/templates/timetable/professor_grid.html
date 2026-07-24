@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}My timetable{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1><i class="bi bi-calendar-week" aria-hidden="true"></i> My timetable</h1>
+        <p>View your weekly lectures by fixed period and weekday.</p>
+    </div>
+</div>
+
+<section class="card" aria-labelledby="filters-heading">
+    <h2 id="filters-heading">Term</h2>
+    <form class="filter-bar" method="get">
+        <div class="form-field">
+            <label for="term-id">Academic term</label>
+            <select id="term-id" name="term_id">
+                <option value="">Select active term</option>
+                {% for term in terms %}<option value="{{ term['id'] }}" {% if term['id'] == selected_term_id %}selected{% endif %}>{{ term['term_name'] }}</option>{% endfor %}
+            </select>
+        </div>
+        <button type="submit"><i class="bi bi-funnel" aria-hidden="true"></i> Apply filter</button>
+        <a class="button secondary" href="{{ url_for('professor_timetable.my_timetable') }}">Clear</a>
+    </form>
+</section>
+
+<section class="card" aria-labelledby="grid-heading" style="margin-top:1.5rem">
+    <h2 id="grid-heading">{{ (terms | selectattr('id', 'equalto', selected_term_id) | list | first)['term_name'] if selected_term_id and terms else 'No active term selected' }}</h2>
+    {% if periods and selected_term_id %}
+    <div class="timetable-grid" role="grid" aria-label="My weekly timetable">
+        <div class="timetable-cell timetable-header">Period</div>
+        {% for day_number, day_name in weekdays %}<div class="timetable-cell timetable-header">{{ day_name }}</div>{% endfor %}
+        {% for period in periods %}
+        <div class="timetable-cell period-cell">{{ period['period_label'] }}</div>
+        {% for day_number, day_name in weekdays %}
+        <div class="timetable-cell" role="gridcell">
+            {% for lecture in cells.get((period['id'], day_number), []) %}
+            <div class="lecture-chip"><strong>{{ lecture['course_code'] }}</strong><span>{{ lecture['course_name'] }}</span><span>{{ lecture['room_code'] }}{% if lecture['room_name'] %} — {{ lecture['room_name'] }}{% endif %}</span></div>
+            {% else %}<span class="muted">No lecture scheduled</span>{% endfor %}
+        </div>
+        {% endfor %}
+        {% endfor %}
+    </div>
+    {% else %}<p class="muted">No active term is available to display your timetable.</p>{% endif %}
+</section>
+{% endblock %}

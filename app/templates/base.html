@@ -81,7 +81,7 @@
                 <a href="{{ url_for('allocations.new_allocation') }}"><i class="bi bi-calendar-plus" aria-hidden="true"></i> <span class="nav-label">Allocate lecture</span></a>
                 <a href="{{ url_for('timetable.grid') }}"><i class="bi bi-grid-3x3-gap" aria-hidden="true"></i> <span class="nav-label">Timetable</span></a>
                 {% else %}
-                <a href="{{ url_for('main.index') }}"><i class="bi bi-calendar-week" aria-hidden="true"></i> <span class="nav-label">My timetable</span></a>
+                <a href="{{ url_for('professor_timetable.my_timetable') }}"><i class="bi bi-calendar-week" aria-hidden="true"></i> <span class="nav-label">My timetable</span></a>
                 {% endif %}
             </nav>
             {% endif %}

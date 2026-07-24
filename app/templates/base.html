@@ -35,6 +35,11 @@
         .activity-table { width: 100%; border-collapse: collapse; }
         .activity-table th, .activity-table td { border-bottom: 1px solid #e7eeeb; padding: .8rem .5rem; text-align: left; }
         .empty-state { color: #5b6b78; }
+        .flash-container { position: fixed; top: 76px; right: 1.5rem; z-index: 1100; width: min(480px, calc(100% - 3rem)); }
+        .flash { margin: 0 0 .75rem; padding: .9rem 1rem; border: 1px solid transparent; border-radius: .5rem; box-shadow: 0 8px 24px rgb(33 53 71 / 18%); font-weight: 600; }
+        .flash-error { background: #fdecec; border-color: #dc3545; color: #842029; }
+        .flash-success { background: #eaf7ee; border-color: #198754; color: #146c43; }
+        .flash-info, .flash-message { background: #eaf2ff; border-color: var(--accent); color: #084298; }
         .toolbar { display: flex; justify-content: flex-end; gap: .75rem; }
         .button, button { border: 0; border-radius: .45rem; background: var(--accent); color: white; cursor: pointer; padding: .65rem 1rem; font: inherit; }
         .button.secondary, button.secondary { background: #e7eeeb; color: var(--text); }
@@ -81,7 +86,7 @@
                 <a href="{{ url_for('allocations.new_allocation') }}"><i class="bi bi-calendar-plus" aria-hidden="true"></i> <span class="nav-label">Allocate lecture</span></a>
                 <a href="{{ url_for('timetable.grid') }}"><i class="bi bi-grid-3x3-gap" aria-hidden="true"></i> <span class="nav-label">Timetable</span></a>
                 {% else %}
-                <a href="{{ url_for('main.index') }}"><i class="bi bi-calendar-week" aria-hidden="true"></i> <span class="nav-label">My timetable</span></a>
+                <a href="{{ url_for('professor_timetable.my_timetable') }}"><i class="bi bi-calendar-week" aria-hidden="true"></i> <span class="nav-label">My timetable</span></a>
                 {% endif %}
             </nav>
             {% endif %}
@@ -96,9 +101,9 @@
             </header>
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                <section aria-label="Notifications">
+                <section class="flash-container" aria-label="Notifications">
                     {% for category, message in messages %}
-                    <p role="alert" data-category="{{ category }}">{{ message }}</p>
+                    <p class="flash flash-{{ category }}" role="alert" data-category="{{ category }}">{{ message }}</p>
                     {% endfor %}
                 </section>
                 {% endif %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Access denied{% endblock %}
+
+{% block content %}
+<section class="card" aria-labelledby="forbidden-heading">
+    <h1 id="forbidden-heading"><i class="bi bi-shield-lock" aria-hidden="true"></i> Access denied</h1>
+    <p>You do not have permission to access this page.</p>
+    <a class="button" href="{{ url_for('main.index') }}">Return to dashboard</a>
+</section>
+{% endblock %}

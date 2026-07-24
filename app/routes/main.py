@@ -13,7 +13,7 @@ main_bp = Blueprint("main", __name__)
 def index():
     if get_current_user()["role"] == "scheduler":
         return redirect(url_for("main.dashboard"))
-    return render_template("main/professor_home.html")
+    return redirect(url_for("professor_timetable.my_timetable"))
 
 
 @main_bp.get("/dashboard")

@@ -31,7 +31,7 @@ IF OBJECT_ID(N'dbo.professors', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.professors (
         id INT IDENTITY(1, 1) NOT NULL CONSTRAINT PK_professors PRIMARY KEY,
-        user_id INT NULL CONSTRAINT UQ_professors_user_id UNIQUE,
+        user_id INT NULL,
         employee_code NVARCHAR(50) NOT NULL CONSTRAINT UQ_professors_employee_code UNIQUE,
         first_name NVARCHAR(100) NOT NULL,
         last_name NVARCHAR(100) NOT NULL,
@@ -171,6 +171,9 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_lectures_term_room' AND object_id = OBJECT_ID(N'dbo.lectures'))
     CREATE INDEX IX_lectures_term_room ON dbo.lectures (term_id, room_id, period_id) WHERE is_active = 1;
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'UX_professors_user_id_nonnull' AND object_id = OBJECT_ID(N'dbo.professors'))
+    CREATE UNIQUE INDEX UX_professors_user_id_nonnull ON dbo.professors (user_id) WHERE user_id IS NOT NULL;
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_lectures_term_professor' AND object_id = OBJECT_ID(N'dbo.lectures'))
     CREATE INDEX IX_lectures_term_professor ON dbo.lectures (term_id, professor_id, period_id) WHERE is_active = 1;

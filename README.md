@@ -21,6 +21,14 @@ app = create_app()
 Use `APP_CONFIG=production` when running outside development. All database
 access goes through `services/db.py`.
 
+## Production readiness
+
+Set `APP_CONFIG=production` and provide a unique `SECRET_KEY` of at least 32
+characters through the environment. Production mode disables debug output and
+uses secure, HTTP-only session cookies. The application rejects missing,
+placeholder, or test-only production secrets. Run the test suite before
+deployment with `python -m unittest discover -s tests -v`.
+
 ## Local demo seed
 
 Copy the seed credential variables from `.env.example` into your local `.env`

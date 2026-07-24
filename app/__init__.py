@@ -1,6 +1,6 @@
 """Flask application factory for the timetable management system."""
 
-from flask import Flask
+from flask import Flask, render_template
 
 from config import get_config
 from app.auth import get_current_user
@@ -31,4 +31,18 @@ def create_app(config_name=None):
     app.register_blueprint(timetable_bp)
     app.register_blueprint(professor_timetable_bp)
     app.context_processor(lambda: {"current_user": get_current_user()})
+
+    @app.errorhandler(403)
+    def forbidden(_error):
+        return render_template("errors/403.html"), 403
+
+    @app.errorhandler(404)
+    def not_found(_error):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(500)
+    def internal_error(_error):
+        app.logger.exception("Unhandled application error")
+        return "An unexpected error occurred. Please try again later.", 500
+
     return app

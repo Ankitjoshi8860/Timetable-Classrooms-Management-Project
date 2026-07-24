@@ -2,11 +2,14 @@
 
 import os
 from datetime import timedelta
+from pathlib import Path
 
 from dotenv import load_dotenv
 
 
-load_dotenv()
+PROJECT_ROOT = Path(__file__).resolve().parent
+load_dotenv(PROJECT_ROOT / ".env")
+load_dotenv(PROJECT_ROOT / "env", override=False)
 
 
 class BaseConfig:
@@ -47,7 +50,20 @@ def get_config(config_name=None):
         "testing": TestingConfig,
     }
     try:
-        return configurations[name]
+        selected = configurations[name]
     except KeyError as exc:
         supported = ", ".join(sorted(configurations))
         raise ValueError(f"Unsupported APP_CONFIG '{name}'. Use: {supported}") from exc
+
+    if name == "production":
+        secret_key = os.getenv("SECRET_KEY", "")
+        if (
+            len(secret_key) < 32
+            or secret_key.startswith("replace-with")
+            or secret_key == "test-only-secret"
+        ):
+            raise RuntimeError(
+                "Production requires a SECRET_KEY of at least 32 characters; "
+                "do not use a placeholder or test secret."
+            )
+    return selected

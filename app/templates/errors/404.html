@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Page not found{% endblock %}
+
+{% block content %}
+<section class="card" aria-labelledby="not-found-heading">
+    <h1 id="not-found-heading"><i class="bi bi-compass" aria-hidden="true"></i> Page not found</h1>
+    <p>The requested page could not be found.</p>
+    <a class="button" href="{{ url_for('main.index') }}">Return to dashboard</a>
+</section>
+{% endblock %}
